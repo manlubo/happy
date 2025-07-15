@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.LikeMapper">
+  <insert id="insert">
+    insert into tbl_like(bno, rno, mno) values (#{bno}, #{rno}, #{mno})
+  </insert>
+  <delete id="delete">
+    delete from tbl_like
+    where mno = #{mno}
+    AND (
+    (#{bno} IS NOT NULL AND bno = #{bno}) OR
+    (#{rno} IS NOT NULL AND rno = #{rno})
+    )
+  </delete>
+
+  <select id="selectOne" resultType="like">
+    select * from tbl_like where lno = #{lno}
+  </select>
+
+  <select id="findByBno" resultType="like">
+    select * from tbl_like where bno = #{bno}
+  </select>
+
+  <select id="countBoard" resultType="int">
+    select count(*) from tbl_like where bno = #{bno}
+  </select>
+
+  <select id="countReply" resultType="int">
+    select count(*) from tbl_like where rno = #{rno}
+  </select>
+
+  <select id="isLiked" resultType="int">
+    SELECT COUNT(*) FROM tbl_like
+    WHERE mno = #{mno}
+    AND (
+    (#{bno} IS NOT NULL AND bno = #{bno}) OR
+    (#{rno} IS NOT NULL AND rno = #{rno})
+    )
+  </select>
+
+  <delete id="deleteByBno">
+    delete from tbl_like where bno = #{bno}
+  </delete>
+
+  <delete id="deleteByRno">
+    delete from tbl_like where rno = #{rno}
+  </delete>
+
+  <select id="checkBoardLiked" resultType="boolean">
+    SELECT COUNT(*) > 0
+    FROM tbl_like
+    WHERE bno = #{bno} AND mno = #{mno}
+  </select>
+
+</mapper>

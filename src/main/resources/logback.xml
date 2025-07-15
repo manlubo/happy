@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%magenta(%d{HH:mm:ss.SSS}) %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
+		</encoder>
+	</appender>
+	<appender name="DAILY_FILE"
+        class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/app.log</file> <!-- 현재 로그를 쓰는 파일 -->
+
+        <rollingPolicy
+            class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <maxHistory>30</maxHistory>
+
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{0} - %msg%n</pattern>
+        </encoder>
+    </appender>
+	
+	
+	<root level="info">
+		<appender-ref ref="STDOUT"/>
+		<appender-ref ref="DAILY_FILE"/>
+	</root>
+	<logger name="jdbc.audit" level="warn"/>
+	<logger name="jdbc.resultset" level="warn"/>
+	<logger name="com.zaxxer.hikari" level="warn"/>
+	<logger name="jdbc.resultsettable" level="warn"/>
+	<logger name="jdbc.connection" level="warn"/>
+	<logger name="jdbc.sqlonly" level="warn"/>
+</configuration>

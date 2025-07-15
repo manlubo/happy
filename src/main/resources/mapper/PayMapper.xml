@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.PayMapper">
+	<!-- 결제 생성 -->
+	<insert id="insert">
+		insert into tbl_pay(dano, mno, payamount, paytype, paystatus, receipt, uuid) values (#{dano}, #{mno}, #{payamount}, #{paytype}, #{paystatus}, #{receipt}, #{uuid})
+		<selectKey keyProperty="pno" resultType="long" order="AFTER">
+ 		select max(pno) from tbl_pay
+ 		</selectKey>
+	</insert>
+	
+	
+	<!-- 결제 수정 -->
+	<update id="update">
+		update tbl_pay
+ 		set paystatus = #{paystatus},
+ 			voiddate = now()
+ 		where pno = #{pno}
+	</update>
+	
+	
+	<!-- 결제 삭제 -->
+	<delete id="delete">
+	</delete>
+	
+	
+	<!-- 결제 리스트 -->
+	<select id="list" resultType="pay">
+		select *
+		from tbl_pay
+		where dano IN ( SELECT dano
+					    FROM tbl_donate_action
+					    WHERE drno = #{drno} )
+	</select>
+	
+	<!-- 어드민 결제 리스트 -->
+	<select id="adminPayList" resultType="pay">
+		select p.*, (select name from tbl_member m where m.mno = p.mno) name
+		from tbl_pay p
+		order by coalesce(p.voiddate, p.regdate) desc
+	</select>
+	
+	<!-- 결제 한개 선택 -->
+	<select id="selectOne" resultType="pay">
+		select *
+		from tbl_pay
+		where pno = #{pno}
+	</select>
+
+	<!-- 결제 한개 선택 -->
+	<select id="findByUuid" resultType="pay">
+		select *
+		from tbl_pay
+		where uuid = #{uuid}
+	</select>
+	
+	<!-- 결제로그 생성 -->
+	<insert id="insertLog">
+		insert into tbl_pay_log(pno, paystatus, result, mtype) values (#{pno}, #{paystatus}, #{result}, #{mtype})
+	</insert>
+	
+	
+	
+	
+	<!-- 결제로그 리스트 -->
+	<select id="listLog" resultType="paylog">
+		select *
+		from tbl_pay_log
+		where paystatus = 'REFUND'
+	</select>
+	
+	
+	<!-- 결제로그 한개 선택 -->
+	<select id="selectOneLog" resultType="paylog">
+		
+	</select>
+
+	<select id="totalPaidCount" resultType="int">
+		select count(*) from tbl_pay where paystatus = 'PAID'
+
+	</select>
+	<select id="totalRefundCount" resultType="int">
+		select count(*) from tbl_pay where paystatus = 'REFUND'
+
+	</select>
+
+	<select id="todayPaidCount" resultType="int">
+		<![CDATA[
+	SELECT count(*)
+	FROM tbl_pay
+	WHERE regdate >= NOW() - INTERVAL 1 DAY and paystatus = 'PAID'
+	]]>
+	</select>
+
+	<select id="findByMno" resultType="pay">
+		select * from tbl_pay where mno = #{mno}
+	</select>
+</mapper>

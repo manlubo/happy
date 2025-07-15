@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.MemberMapper">
+
+	<!-- 회원가입 -->
+	<insert id="insert" parameterType="member">
+		INSERT INTO tbl_member (id, pw, name, email, tel, nickname, location, mtype, profile,status)
+		VALUES (
+		#{id}, #{pw},
+		#{name, jdbcType=VARCHAR},
+		#{email},
+		#{tel, jdbcType=VARCHAR},
+		#{nickname, jdbcType=VARCHAR},
+		#{location, jdbcType=VARCHAR},
+		#{mtype},
+		#{profile, jdbcType=VARCHAR},
+		#{status}
+		)
+	</insert>
+
+	<!-- ID로 회원 조회 -->
+	<select id="findById" resultType="member">
+		SELECT * FROM tbl_member WHERE
+		id = #{id}
+	</select>
+
+	<!-- 회원번호로 조회 -->
+	<select id="findByMno" resultType="member">
+		SELECT * FROM tbl_member WHERE
+		mno = #{mno}
+	</select>
+
+	<!-- 이메일 + 이름으로 아이디 찾기 -->
+	<select id="findIdsByEmailAndName" resultType="member">
+		SELECT id, name,
+		regdate
+		FROM tbl_member
+		WHERE email = #{email}
+		AND name = #{name}
+	</select>
+
+	<!-- 이메일로 회원 조회 (중복검사용) -->
+	<select id="findByEmail" resultType="member">
+		SELECT * FROM tbl_member
+		WHERE email = #{email}
+	</select>
+
+	<!-- 이메일 인증 여부 업데이트 (tbl_member 테이블) -->
+	<update id="updateEmailCheckByEmail">
+		UPDATE tbl_member SET emailcheck = 1 WHERE email =
+		#{email}
+	</update>
+
+	<!-- 이메일로 회원 객체 조회 -->
+	<select id="selectByEmail" parameterType="string"
+		resultType="member">
+		SELECT * FROM tbl_member WHERE email = #{email}
+	</select>
+
+	<!-- tbl_email_check 테이블에서 check 컬럼 업데이트 -->
+	<update id="verifyEmail" parameterType="string">
+		UPDATE tbl_email_check
+		SET `check` = 1
+		WHERE uuid = #{uuid}
+	</update>
+
+	<update id="updateMember" parameterType="member">
+		UPDATE tbl_member
+		SET
+		name = #{name},
+		nickname = #{nickname},
+		tel = #{tel},
+		location =
+		#{location}
+		WHERE mno = #{mno}
+	</update>
+	<!-- 마이페이지에 이름닉네임등등입력 -->
+	<update id="updateProfile" parameterType="member">
+		UPDATE tbl_member
+		SET
+		tel = #{tel}, name = #{name}, nickname = #{nickname}, location =
+		#{location}
+		WHERE mno = #{mno}
+	</update>
+
+	<!-- 비밀번호 찾기 -->
+	<update id="updatePassword">
+		UPDATE tbl_member
+		SET pw = #{pw}
+		WHERE id = #{id}
+	</update>
+
+	<!-- 비밀번호 변경 -->
+	<update id="updatePasswordByUuid">
+		UPDATE tbl_member m
+		JOIN tbl_email_check e ON m.email = e.email
+		SET m.pw = #{pw}
+		WHERE e.uuid = #{uuid}
+	</update>
+	
+			<!-- 프로필 이미지 경로 업데이트 -->
+	<update id="updateProfileImage" parameterType="member">
+    UPDATE tbl_member
+    SET profile = #{profile}
+    WHERE mno = #{mno}
+	</update>
+
+			
+  
+
+</mapper>

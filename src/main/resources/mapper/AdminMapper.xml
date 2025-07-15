@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.AdminMapper">
+
+  <!-- 승인대기 기관회원 목록 -->
+  <select id="selectPendingOrgMembers" resultType="member">
+    SELECT * FROM tbl_member WHERE mtype = 'ORG' AND status = 'READY'
+  </select>
+
+  <!-- 회원 상태 변경 -->
+  <update id="updateMemberStatus">
+    UPDATE tbl_member
+    SET status = #{status}
+    WHERE mno = #{mno}
+  </update>
+
+  <!-- 승인/거절 로그 기록 -->
+  <insert id="insertApprLog" parameterType="apprLog">
+    INSERT INTO tbl_appr_log (mno, appr, reason, admno)
+    VALUES (#{mno}, #{appr}, #{reason}, #{admno})
+  </insert>
+
+
+  <!--기관회원 승인정보조화 -->
+  <select id="selectApprovalLogs" resultType="apprLog">
+    SELECT
+    a.apprlogno,
+    a.mno,
+    m.id,
+    m.email,
+    a.appr,
+    a.reason,
+    a.admno,
+    a.regdate
+    FROM tbl_appr_log a
+    JOIN tbl_member m ON a.mno = m.mno
+    ORDER BY a.regdate DESC
+  </select>
+</mapper>

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="mapper.DonateMapper">
+	
+	<!-- 모금함 생성 -->
+	<insert id="insert">
+	 	insert into tbl_donate(title, content, mno) values (#{title}, #{content}, #{mno})
+	 	<selectKey keyProperty="dno" resultType="long" order="AFTER">
+ 		select max(dno) from tbl_donate
+ 		</selectKey>
+ 	</insert>
+ 	
+ 	<!-- 모금함 수정 -->
+ 	<update id="update">
+ 		update tbl_donate
+ 		set title = #{title},
+ 			content = #{content}
+ 		where dno = #{dno}
+ 	</update>
+ 	
+ 	<!--  모금함 삭제 -->
+ 	<delete id="delete">
+ 		delete from tbl_donate where dno = #{dno}
+ 	</delete>
+ 
+ 	<!-- 모금함 하나 선택 -->
+ 	<select id="selectOne" resultType="donate">
+ 		select *
+ 		from tbl_donate
+ 		where dno = #{dno}
+ 	</select>
+ 	
+ 	
+
+
+ 	
+ 	<!-- 모금 회차 정보 생성 -->
+ 	<insert id="insertRound">
+	 	insert into tbl_donate_round(dno, round, goalamount, voiddate) values (#{dno}, #{round}, #{goalamount}, #{voiddate})
+	 	<selectKey keyProperty="drno" resultType="long" order="AFTER">
+ 		select max(drno) from tbl_donate_round
+ 		</selectKey>
+ 	</insert>
+ 	
+ 	<!-- 모금 회차 정보 수정 -->
+ 	<update id="updateRound">
+ 		update tbl_donate_round
+ 		set goalamount = #{goalamount},
+ 			voiddate = #{voiddate},
+ 			status = #{status}
+ 		where drno = #{drno}
+ 	</update>
+ 	
+ 	<!--  모금회차 삭제 -->
+ 	<delete id="deleteRound">
+ 		delete from tbl_donate_round where drno = #{drno}
+ 	</delete>
+ 
+ 	<!-- 모금회차 하나 선택 -->
+ 	<select id="selectOneRound" resultType="donateRound">
+ 		select r.*, 
+ 		(select sum(amount) from tbl_donate_action where drno = #{drno} and dano in (select dano from tbl_pay where paystatus = 'PAID')) nowamount , 
+ 		(SELECT COUNT(DISTINCT mno) FROM tbl_donate_action WHERE drno = #{drno} and dano in (select dano from tbl_pay where paystatus = 'PAID')) donatecount 
+ 		from tbl_donate_round r 
+ 		where drno = #{drno}
+ 	</select>
+ 	
+	<!-- 라운드 정보 가져오기 -->
+ 	<select id="findByMaxRound" resultType="int">
+ 		select max(round) from tbl_donate_round where dno = #{dno}
+ 	</select> 	
+ 	
+ 	<!-- 기부 정보 생성 -->
+ 	<insert id="insertAction">
+	 	insert into tbl_donate_action(drno, mno, amount) values (#{drno}, #{mno}, #{amount})
+	 	<selectKey keyProperty="dano" resultType="long" order="AFTER">
+ 		select max(dano) from tbl_donate_action
+ 		</selectKey>
+ 	</insert>
+ 	
+ 	<!-- 기부내역 수정 -->
+ 	<update id="updateAction">
+ 	
+ 	</update>
+ 	
+ 	<!--  기부내역 삭제 -->
+ 	<delete id="deleteAction">
+ 		
+ 	</delete>
+ 
+ 	<!-- 기부내역 하나 선택 -->
+ 	<select id="selectOneAction" resultType="donateRound">
+ 		
+ 	</select>
+
+ 	<!-- 해당 모금함에 기부한 금액 -->
+ 	<select id="findMyAmount" resultType="long">
+ 		select coalesce(sum(amount), 0)
+ 		from tbl_donate_action
+ 		where drno = #{drno} and mno = #{mno} and dano in (select dano from tbl_pay where paystatus = 'PAID')
+ 	</select>
+ 	
+ 	<!-- 해당 플랫폼에서 기부된 전체 금액 -->
+ 	<select id="findTotalAmount" resultType="long">
+ 		select coalesce(sum(amount), 0)
+ 		from tbl_donate_action
+ 		where dano in (select dano from tbl_pay where paystatus = 'PAID')
+ 	</select>
+ 	
+ 	<!-- 해당 플랫폼에 기부한 전체금액 -->
+ 	<select id="findMyTotalAmount" resultType="long">
+ 		select coalesce(sum(amount), 0)
+ 		from tbl_donate_action
+ 		where mno = #{mno} and dano in (select dano from tbl_pay where paystatus = 'PAID')
+ 	</select>
+ 	
+ 	<!-- 어드민 actionlist -->
+ 	<select id="adminActionList" resultType="donateAction">
+ 	SELECT 
+	  a.*, 
+	  m1.name AS name,        
+	  m2.name AS orgname,     
+	  b.title AS title,
+	  b.bno as bno
+	FROM tbl_donate_action a
+	LEFT JOIN tbl_member m1 ON a.mno = m1.mno
+	LEFT JOIN tbl_board b ON a.drno = b.drno
+	LEFT JOIN tbl_member m2 ON b.mno = m2.mno
+	WHERE a.dano IN (SELECT dano FROM tbl_pay WHERE paystatus = 'PAID')
+	order by regdate desc
+ 	</select>
+
+	<!-- 마이페이지 actionlist -->
+ 	<select id="myActionList" resultType="donateAction">
+ 	SELECT
+	  a.*,
+	  m1.name AS name,
+	  m2.name AS orgname,
+	  b.title AS title,
+	  b.bno as bno
+	FROM tbl_donate_action a
+	LEFT JOIN tbl_member m1 ON a.mno = m1.mno
+	LEFT JOIN tbl_board b ON a.drno = b.drno
+	LEFT JOIN tbl_member m2 ON b.mno = m2.mno
+	WHERE a.dano IN (SELECT dano FROM tbl_pay WHERE paystatus = 'PAID') and a.mno = #{mno}
+	order by regdate desc
+ 	</select>
+
+	<!-- 기부게시글에 상위 세명 뽑아오기 -->
+	<select id="findTop3" resultType="long">
+		SELECT da.mno
+		FROM tbl_donate_action da
+		JOIN tbl_pay p ON da.dano = p.dano
+		WHERE da.drno = #{drno}
+		AND p.paystatus = 'PAID'
+		GROUP BY da.mno
+		ORDER BY SUM(da.amount) DESC
+		LIMIT 3;
+	</select>
+</mapper>

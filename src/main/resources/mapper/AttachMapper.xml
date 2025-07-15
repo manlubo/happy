@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <mapper namespace="mapper.AttachMapper">
+ 	<!-- 첨부파일 추가 -->
+ 	<insert id="insert">
+	 	insert into tbl_attach(uuid , origin, path, image, odr, bno, mno, viewbno) values (#{uuid} , #{origin}, #{path}, #{image}, #{odr}, #{bno}, #{mno}, #{viewbno})
+ 	</insert>
+ 	
+ 	<update id="update">
+ 		update tbl_attach
+ 		set uuid = #{uuid},
+ 			origin = #{origin},
+ 			path = #{path}
+		<where>
+			<choose>
+			<when test="bno != null">
+			bno = #{bno}
+			</when>
+			<when test="mno != null">
+			mno = #{mno}
+			</when>
+			<otherwise>
+				1 = 2
+			</otherwise>
+			</choose>
+		</where>
+ 	</update>
+ 	
+ 	
+ 	<!-- 첨부파일 삭제 -->
+ 	<delete id="delete">
+ 		DELETE from tbl_attach where uuid = #{uuid}
+ 	</delete>
+ 	
+ 	<delete id="deleteByBno">
+ 		DELETE from tbl_attach
+		where bno = #{bno} or viewbno = #{bno}
+ 	</delete>
+ 	
+ 	<!-- 첨부파일 선택 -->
+ 	<select id="selectOne" resultType="attach">
+ 		SELECT * from tbl_attach where bno = #{bno}
+ 	</select>
+ 	
+ 	<!-- 첨부파일 목록 조회 -->
+ 	<select id="list" resultType="attach">
+ 		SELECT * from tbl_attach where bno = #{bno} order by odr
+ 	</select>
+
+ 	<!-- 첨부파일 목록 조회 -->
+ 	<select id="selectYesterdayList" resultType="attach">
+ 		select * from tbl_attach ta
+		where path = date_FORMAT(NOW() - INTERVAL 1 DAY, '%Y/%m%/%d')
+ 	</select>
+ 	
+ 	<!-- 게시판 썸네일 이미지 -->
+	<select id="getBoardThumbnail" resultType="string">
+	<![CDATA[
+		select concat("https://happygivers-bucket.s3.ap-northeast-2.amazonaws.com/upload/", path, "/", uuid) 
+		from tbl_attach 
+		where bno = #{bno}
+  	]]>
+	</select> 	
+	
+	<!-- 유저 프로필 이미지 -->
+	<select id="getMemberProfile" resultType="string">
+	<![CDATA[
+		select concat("/display?uuid=", uuid, "&path=", path)  
+		from tbl_attach where mno = #{mno}
+		]]>
+	</select> 	
+ 	
+ 	<!-- 게시글 포함 이미지 리스트 uuid -->
+ 	<select id="viewBnoUuidList" resultType="string">
+ 		select uuid
+ 		from tbl_attach
+ 		where viewbno = #{bno}
+ 	</select>
+
+	<!-- 게시글에 포함된 이미지들 -->
+ 	<select id="findByViewBno" resultType="attach">
+ 		select *
+ 		from tbl_attach
+ 		where viewbno = #{bno}
+ 	</select>
+ 	
+ </mapper>

@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.BoardMapper">
+ 	<resultMap type="board" id="b">
+ 		<id column="bno" property="bno"/>
+ 		<result column="title" property="title"/>
+ 		<result column="content" property="content"/>
+ 		<result column="regdate" property="regdate"/>
+ 		<result column="moddate" property="moddate"/>
+ 		<result column="mno" property="mno"/>
+ 		<result column="cno" property="cno"/>
+ 		<result column="cnt" property="cnt"/>
+ 		<result column="status" property="status"/>
+		<result column="likeCnt" property="likeCnt"/>
+ 	</resultMap>
+
+
+<sql id="criteria">
+ 		<where>
+ 			<trim prefixOverrides="AND | OR">
+ 			
+ 			<!-- 검색이 없는 경우 -->
+			<if test="types == null">
+				<if test="cno != null">
+					AND cno = #{cno}
+				</if>
+				<if test="cno == null and ctype != null">
+					AND cno IN (
+						SELECT cno
+						FROM tbl_category
+						WHERE ctype = #{ctype}
+					)
+				</if>
+			</if>
+
+			<!-- 검색이 있는 경우: 무조건 ctype 기준 -->
+			<if test="types != null and ctype != null">
+				AND cno IN (
+					SELECT cno
+					FROM tbl_category
+					WHERE ctype = #{ctype}
+				)
+			</if>
+			
+			<if test="status != null">
+		 		and status = #{status}
+ 			</if>
+ 			<if test="types != null">
+ 				<foreach collection="types" item="t" open="and(" close=")" separator="or">
+ 					<choose>
+ 						<when test="t eq 'T'.toString">
+ 							title like concat('%', #{keyword}, '%')
+ 						</when>
+ 						<when test="t eq 'C'.toString">
+ 							content like concat('%', #{keyword}, '%')
+ 						</when>
+ 						<when test="t eq 'N'.toString">
+ 							 mno = (
+						        SELECT mno
+						        FROM tbl_member
+						        WHERE name like concat('%', #{keyword}, '%')
+						    ) 
+ 						</when>
+ 					</choose>
+ 				</foreach>
+ 			</if>
+ 			</trim>
+ 		</where>
+	</sql>
+
+
+
+
+	<!-- 게시글 작성 -->
+ 	<insert id="insert">
+	 	insert into tbl_board(title, content, mno, cno, status, drno) values (#{title}, #{content}, #{mno}, #{cno}, #{status}, #{drno})
+	 	<selectKey keyProperty="bno" resultType="long" order="AFTER">
+ 		select max(bno) from tbl_board
+ 		</selectKey>
+ 	</insert>
+ 	
+ 	<!-- 게시글 수정 -->
+ 	<update id="update">
+ 		update tbl_board
+ 		set title = #{title},
+ 			content = #{content},
+ 			moddate = now(),
+ 			cno = #{cno},
+ 			status = #{status}
+ 		where bno = #{bno}
+ 	</update>
+ 	
+ 	<!--  게시글 삭제 -->
+ 	<delete id="delete">
+ 		delete from tbl_board where bno = #{bno}
+ 	</delete>
+ 	
+ 	
+ 	<!-- 게시글 리스트 -->
+ 	<select id="list" resultMap="b">
+ 		select b.*, (SELECT COUNT(*) FROM tbl_like l WHERE l.bno = b.bno) AS likeCnt
+ 		from tbl_board b
+ 		<include refid="criteria"/>
+ 		order by bno DESC
+		limit #{amount} offset #{offset}
+ 	</select>
+ 	
+ 	
+ 	
+ 	
+ 	<!-- 게시글 하나 선택 -->
+ 	<select id="selectOne" resultMap="b">
+ 		select b.*, (SELECT COUNT(*) FROM tbl_like l WHERE l.bno = b.bno) AS likeCnt
+		from tbl_board b
+		where bno = #{bno}
+ 	</select>
+ 	
+ 	<!-- 게시글 갯수 -->
+ 	<select id="getCount" resultType="long">
+ 		select count(*) from tbl_board
+		<include refid="criteria"></include>
+ 	</select>
+ 	
+ 	
+ 	<!-- 마감일이 제일 가까운 하나의 게시글선택 -->
+ 	<select id="selectOneDeadline" resultMap="b">
+ 		select b.*, (SELECT COUNT(*) FROM tbl_like l WHERE l.bno = b.bno) AS likeCnt
+		from tbl_board b
+		join tbl_donate_round dr on b.drno = dr.drno
+		left join tbl_donate_action da on dr.drno = da.drno
+		where b.status = 'ACTIVE' and dr.status = 'ACTIVE' 
+		group by b.bno, dr.voiddate, dr.goalamount
+		having dr.goalamount - coalesce(sum(da.amount), 0) > 0
+		order by dr.voiddate
+		limit 1
+ 	</select>
+ 	
+ 	<!-- 상태가 active인 기부 게시글 가져오기 -->
+ 	<select id="listNew" resultMap="b">
+ 		select b.*, (SELECT COUNT(*) FROM tbl_like l WHERE l.bno = b.bno) AS likeCnt
+ 		from tbl_board b
+ 		where drno is not null and status = 'ACTIVE' and drno in (select drno from tbl_donate_round where status = 'ACTIVE')
+ 		order by regdate desc
+ 		limit 3
+ 	</select>
+
+	<!-- 공지사항 최신 세개 -->
+	<select id="listNotice" resultMap="b">
+ 		select *
+ 		from tbl_board b
+ 		where status = 'ACTIVE' and cno in (select cno from tbl_category where ctype = 'NOTICE')
+ 		order by regdate desc
+ 		limit 3
+ 	</select>
+
+	<!-- Q&A 최신 세개 -->
+	<select id="listQna" resultMap="b">
+ 		select *
+ 		from tbl_board b
+ 		where status = 'ACTIVE' and cno in (select cno from tbl_category where ctype = 'QNA')
+ 		order by regdate desc
+ 		limit 3
+ 	</select>
+
+	<!-- mno로 작성된 기부게시글 세개 -->
+	<select id="listByMnoDonate" resultMap="b">
+ 		select *
+ 		from tbl_board b
+ 		where mno= #{mno} and status = 'ACTIVE' and cno in (select cno from tbl_category where ctype = 'DONATE')
+ 		order by regdate desc
+ 		limit 3
+ 	</select>
+
+	<!-- 총 게시글 수 -->
+	<select id="totalBoardCount" resultType="int">
+ 		select count(*)
+ 		from tbl_board b
+ 		where status = 'ACTIVE'
+ 	</select>
+
+	<select id="totalVoidCount" resultType="int">
+		<![CDATA[
+	SELECT COUNT(*)
+	FROM tbl_board
+	WHERE drno is not null and drno in (select drno from tbl_donate_round where voiddate < NOW())
+	]]>
+	</select>
+
+	<select id="todayBoardCount" resultType="int">
+		<![CDATA[
+	SELECT COUNT(*)
+	FROM tbl_board
+	WHERE regdate >= NOW() - INTERVAL 1 DAY
+	]]>
+	</select>
+
+	<select id="myBoardList" resultMap="b">
+		select *
+		from tbl_board
+		where mno = #{mno} and not status = 'DELETE'
+		order by regdate desc
+	</select>
+ </mapper>
