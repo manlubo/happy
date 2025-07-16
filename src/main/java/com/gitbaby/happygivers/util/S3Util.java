@@ -1,6 +1,9 @@
 package com.gitbaby.happygivers.util;
 
+import com.gitbaby.happygivers.config.S3Config;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -17,25 +20,29 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Component
 public class S3Util {
-  private static final Properties props = PropsLoaderUtil.getProperties("secret/aws_s3.properties");
+  @Autowired
+  private static S3Config s3Config;
+  static {log.info("{}",s3Config);}
 
   private static final S3Client s3 = S3Client.builder()
-    .region(Region.of(props.getProperty("region-name")))
+    .region(Region.of(s3Config.getRegionName()))
     .credentialsProvider(
       StaticCredentialsProvider.create(
         AwsBasicCredentials.create(
-          props.getProperty("access-key"),
-          props.getProperty("secret-key")
+          s3Config.getAccessKey(),
+          s3Config.getSecretKey()
         )
       )
     ).build();
 
   public static void main(String[] args) {
+
     System.out.println(s3);
 
     PutObjectRequest por = PutObjectRequest.builder()
-      .bucket(props.getProperty("bucket-name"))
+      .bucket(s3Config.getBucketName())
       .key("pom.xml")
       .contentType("text/xml")
       .build();
@@ -63,7 +70,7 @@ public class S3Util {
 
   private static void uploadInternal(InputStream is, String key, long size, String contentType) {
     PutObjectRequest putReq = PutObjectRequest.builder()
-      .bucket(props.getProperty("bucket-name"))
+      .bucket(s3Config.getBucketName())
       .key(key)
       .contentType(contentType != null ? contentType : "application/octet-stream")
       .build();
@@ -79,7 +86,7 @@ public class S3Util {
   public static void remove(String key) {
     try {
       DeleteObjectRequest deleteReq = DeleteObjectRequest.builder()
-        .bucket(props.getProperty("bucket-name"))
+        .bucket(s3Config.getBucketName())
         .key(key)
         .build();
 
@@ -97,7 +104,7 @@ public class S3Util {
     for (String key : keys) {
       try {
         DeleteObjectRequest deleteReq = DeleteObjectRequest.builder()
-          .bucket(props.getProperty("bucket-name"))
+          .bucket(s3Config.getBucketName())
           .key(key)
           .build();
         s3.deleteObject(deleteReq);
@@ -114,7 +121,7 @@ public class S3Util {
 
   public static List<String> listObjects(String prefix) {
     ListObjectsV2Request req = ListObjectsV2Request.builder()
-      .bucket(props.getProperty("bucket-name"))
+      .bucket(s3Config.getBucketName())
       .prefix(prefix) // 예: "upload/2025/07/08/"
       .build();
 
