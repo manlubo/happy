@@ -31,6 +31,7 @@ public class BoardService {
   private LikeMapper likeMapper;
   private CategoryMapper categoryMapper;
 	private DonateService donateService;
+  private ReplyService replyService;
 
   // 게시글 생성
   @Transactional
@@ -151,7 +152,6 @@ public class BoardService {
     // 댓글 삭제
     if (replyMapper.selectByBno(bno) != null) {
       List<Reply> replys = replyMapper.selectByBno(bno);
-      ReplyService replyService = new ReplyService();
       for (Reply r : replys) {
         replyService.remove(r.getRno());
       }

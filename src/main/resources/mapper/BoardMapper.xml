@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mapper.BoardMapper">
+<mapper namespace="com.gitbaby.happygivers.mapper.BoardMapper">
  	<resultMap type="board" id="b">
  		<id column="bno" property="bno"/>
  		<result column="title" property="title"/>

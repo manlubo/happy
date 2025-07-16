@@ -6,13 +6,12 @@ import java.util.List;
 import com.gitbaby.happygivers.domain.Member;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.session.SqlSession;
 
 import com.gitbaby.happygivers.domain.DonateAction;
 import com.gitbaby.happygivers.domain.DonateRound;
 import com.gitbaby.happygivers.mapper.DonateMapper;
 import org.springframework.stereotype.Service;
-//import com.gitbaby.happygivers.util.MybatisUtil;
+
 
 @Service
 @AllArgsConstructor
@@ -23,8 +22,7 @@ public class DonateService {
 
   // drno로 round개체 찾아오기
   public DonateRound findByDrno(Long drno) {
-    DonateRound round = donateMapper.selectOneRound(drno);
-    return round;
+    return donateMapper.selectOneRound(drno);
   }
 
   // round 수정

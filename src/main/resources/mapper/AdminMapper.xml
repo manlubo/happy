@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mapper.AdminMapper">
+<mapper namespace="com.gitbaby.happygivers.mapper.AdminMapper">
 
   <!-- 승인대기 기관회원 목록 -->
   <select id="selectPendingOrgMembers" resultType="member">

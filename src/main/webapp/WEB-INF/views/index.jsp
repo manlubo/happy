@@ -251,7 +251,7 @@
                             <p class="small" style="color: var(--col-4);"><span class="today">2025.06.20</span> 기준</p>
                         </div>
                         <div class="rounded-3 py-2" style="background-color: var(--col-0);" >
-                            <p class="text-center fw-semibold fs-5 m-0"><fmt:formatNumber value="${myTotalAmount}" /><span>원</span></p>
+                            <p class="text-center fw-semibold fs-5 m-0"><fmt:formatNumber value="${myTotalAmount != null ? myTotalAmount : '0'}" /><span>원</span></p>
                         </div>
                     </div>
 

@@ -1,19 +1,22 @@
 package com.gitbaby.happygivers.service;
 
-import org.apache.ibatis.session.SqlSession;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-import domain.Tos;
-import mapper.TosMapper;
-import util.MybatisUtil;
 
+import com.gitbaby.happygivers.domain.Tos;
+import com.gitbaby.happygivers.mapper.TosMapper;
+import org.springframework.stereotype.Service;
+
+@Slf4j
+@Service
+@AllArgsConstructor
 public class TosService {
+  private TosMapper mapper;
 
-    // 약관 동의 저장
-    public void save(Tos tos) {
-        try (SqlSession session = MybatisUtil.getSqlSession()) {
-            TosMapper mapper = session.getMapper(TosMapper.class);
-            mapper.insert(tos);
-            session.commit();
-        }
-    }
+  // 약관 동의 저장
+  public void save(Tos tos) {
+    mapper.insert(tos);
+  }
+
 }
