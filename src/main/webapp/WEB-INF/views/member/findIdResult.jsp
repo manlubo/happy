@@ -32,6 +32,7 @@
       font-size: 12px;
     }
   </style>
+  <%@ include file="../common/head.jsp" %>
 </head>
 
 <body>

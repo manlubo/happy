@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>이메일 인증 실패</title>
+    <%@ include file="../common/head.jsp" %>
 </head>
 <body>
     <h2>이메일 인증에 실패했습니다.</h2>

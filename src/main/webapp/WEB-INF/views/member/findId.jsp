@@ -11,7 +11,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" />
 
   <!-- 사용자 정의 스타일 -->
-  <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css" />
+  <%@ include file="../common/head.jsp" %>
 
   <style>
     main {

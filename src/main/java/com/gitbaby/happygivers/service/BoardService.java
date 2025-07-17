@@ -32,6 +32,7 @@ public class BoardService {
   private CategoryMapper categoryMapper;
 	private DonateService donateService;
   private ReplyService replyService;
+  private S3Util s3Util;
 
   // 게시글 생성
   @Transactional
@@ -99,7 +100,7 @@ public class BoardService {
     if (board.getAttach() != null) {
       if (attachMapper.selectOne(board.getBno()) != null) {
         String removeImg = attachMapper.selectOne(board.getBno()).getS3Key();
-        S3Util.remove(removeImg);
+        s3Util.remove(removeImg);
         attachMapper.update(board.getAttach());
       } else {
         Attach img = board.getAttach();
@@ -145,7 +146,7 @@ public class BoardService {
         .map(Attach::getS3Key)
         .toList();
 
-      S3Util.removeAll(keys);
+      s3Util.removeAll(keys);
       attachMapper.deleteByBno(bno);
     }
 
@@ -317,7 +318,7 @@ public class BoardService {
     originList.removeAll(uselist);
 
     for (Attach a : originList) {
-      S3Util.remove(a.getS3Key());
+      s3Util.remove(a.getS3Key());
       attachMapper.delete(a.getUuid());
     }
     log.info("{}", modifyImgList);
