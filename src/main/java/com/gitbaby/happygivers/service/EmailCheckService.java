@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class EmailCheckService {
   private MemberMapper mapper;
+  private MailUtil mailUtil;
 
   // 인증 토큰 저장
   public void saveToken(String uuid, String email) {
@@ -80,7 +81,7 @@ public class EmailCheckService {
       "<a href='" + link + "' target='_blank'>" + link + "</a>";
 
     // 메일 전송
-    MailUtil.sendEmail(email, "Happygivers 이메일 재인증", html);
+    mailUtil.sendEmail(email, "Happygivers 이메일 재인증", html);
   }
 
 }

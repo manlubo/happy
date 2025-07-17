@@ -36,6 +36,7 @@
 </head>
 
 <body>
+<%@ include file="../common/header.jsp" %>
 <main>
   <!-- 전체 중앙 정렬 -->
   <div class="d-flex flex-column justify-content-center align-items-center min-vh-100">
@@ -71,12 +72,13 @@
 
         <!-- 버튼들 -->
         <a href="${pageContext.request.contextPath}/member/find-pw" class="btn btn-outline-primary w-100 mb-2">비밀번호 찾기</a>
-        <a href="${pageContext.request.contextPath}/member/login" class="btn btn-primary w-100">로그인</a>
+        <a href="${pageContext.request.contextPath}/member/login?mtype=USER" class="btn btn-primary w-100">로그인</a>
       </div>
     </c:if>
 
   </div>
 </main>
+<%@ include file="../common/footer.jsp" %>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

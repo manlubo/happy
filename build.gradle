@@ -52,6 +52,7 @@ dependencies {
 
 	implementation 'redis.clients:jedis:5.2.0'
 	implementation 'com.sun.mail:jakarta.mail:2.0.1'
+	implementation 'com.sun.activation:jakarta.activation:2.0.1'
 }
 
 tasks.named('test') {

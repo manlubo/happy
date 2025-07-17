@@ -40,16 +40,10 @@
       margin-bottom: 32px;
     }
 
-    .btn-main {
-      background: #0077FF;
-      color: #fff;
-      font-weight: 600;
-      border-radius: 6px;
-      padding: 12px;
-    }
   </style>
 </head>
 <body>
+<%@ include file="../common/header.jsp" %>
   <main>
     <h2 class="text-center">아이디 찾기</h2>
 
@@ -68,11 +62,11 @@
         </div>
 
         <!-- 버튼 -->
-        <button type="submit" class="btn btn-main w-100">아이디 찾기</button>
+        <button type="submit" class="btn btn-primary w-100">아이디 찾기</button>
       </form>
     </div>
   </main>
-
+<%@ include file="../common/footer.jsp" %>
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 </body>

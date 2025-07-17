@@ -8,6 +8,7 @@ import com.gitbaby.happygivers.service.EmailCheckService;
 import com.gitbaby.happygivers.service.MemberService;
 import com.gitbaby.happygivers.service.TosService;
 import com.gitbaby.happygivers.util.MailUtil;
+import com.gitbaby.happygivers.util.RedisUtil;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,10 @@ public class MemberController {
   private MemberService memberService;
   private EmailCheckService emailCheckService;
   private TosService tosService;
+  private MailUtil mailUtil;
 
+
+  // 회원가입
   @GetMapping("register")
   public void registerForm(){
 
@@ -63,7 +67,7 @@ public class MemberController {
       "<a href='" + authLink + "' target='_blank'>" + authLink + "</a>";
 
     //  메일 전송
-    MailUtil.sendEmail(member.getEmail(), "Happygivers 이메일 인증", html);
+    mailUtil.sendEmail(member.getEmail(), "Happygivers 이메일 인증", html);
 
     Tos terms = Tos.builder()
       .mno(member.getMno())
@@ -85,6 +89,8 @@ public class MemberController {
     return "redirect:/";
   }
 
+
+  // 로그인
   @GetMapping("login")
   public void loginForm(@ModelAttribute Mtype mtype){
 
@@ -101,12 +107,17 @@ public class MemberController {
     return "redirect:/";
   }
 
+
+
+  // 로그아웃
   @RequestMapping (value = "logout", method = {RequestMethod.GET, RequestMethod.POST})
   public String logout(HttpSession session){
     session.invalidate();
     return "redirect:/";
   }
 
+
+  // 아이디찾기
   @GetMapping("find-id")
   public String findIdForm(){
     return "member/findId";
@@ -115,8 +126,85 @@ public class MemberController {
   @PostMapping("find-id")
   public String findId(Member member, Model model){
     model.addAttribute("memberList", memberService.findIdsByEmailAndName(member.getEmail(), member.getName()));
-    return "findIdResult";
+    return "member/findIdResult";
   }
+
+
+
+  // 비밀번호 찾기
+  @GetMapping("findpw")
+  public void findPwForm(){
+  }
+
+
+
+  // 비밀번호 재설정 이메일 전송
+  @PostMapping("send-reset-mail")
+  public String resetMail(Member member, Model model){
+    if (!member.getEmail().matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")){
+      return "findpw?error=invalidEmail";
+    }
+    Member m = memberService.findById(member.getId());
+    if(m == null || !m.getEmail().equals(member.getEmail())){
+      return "findpw?error=1";
+    }
+
+    String uuid = UUID.randomUUID().toString();
+    RedisUtil.set(uuid, member.getId(), 300);
+
+    String link = ServletUriComponentsBuilder.fromCurrentRequest()
+      .replacePath("/resetpw")
+      .queryParam("uuid", uuid)
+      .build()
+      .toUriString();
+
+    String subject = "[해피기버즈] 비밀번호 재설정 링크";
+    String content = "비밀번호 재설정 링크입니다.<br>아래 링크를 클릭하세요:<br><a href='" + link + "'>" + link + "</a>";
+
+    mailUtil.sendEmail(member.getEmail(), subject, content);
+
+    model.addAttribute("sent", true);
+    return "findpw";
+  }
+
+
+  // 비밀번호 재설정
+  @GetMapping("resetpw")
+  public String resetPwForm(@RequestParam("uuid") String uuid, Model model){
+    String id = RedisUtil.get(uuid);
+
+
+    if(id == null){
+      return "member/findpw?error=expired";
+    }
+
+    String tempPw = UUID.randomUUID().toString().substring(0, 8);
+
+    memberService.updatePassword(id, tempPw);
+    RedisUtil.remove(String.valueOf(uuid));
+
+    model.addAttribute("tempPw", tempPw);
+    return  "member/showtemppw";
+  }
+
+  @PostMapping("resetpw")
+  public String resetPw(@RequestParam("uuid") String uuid, @RequestParam("pw") String pw, @RequestParam("pw2") String pw2){
+    if(!pw.equals(pw2)){
+      return "redirect:member/resetpw?uuid=" + uuid +  "&error=1" ;
+    }
+
+    String id = RedisUtil.get(uuid);
+    if(id == null){
+      return "redirect:member/findpw?error=expired";
+    }
+
+    memberService.updatePassword(id, pw);
+
+    RedisUtil.remove(uuid);
+
+    return "redirect:member/login?reset=success";
+  }
+
 
 
 

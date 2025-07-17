@@ -3,7 +3,7 @@ spring:
     import:
       - optional:classpath:./secret/db.yml
       - optional:classpath:secret/s3.yml
-      - optional:classpath:./secret/mail.yml
+      - optional:classpath:secret/mail.yml
   application:
     name: happygivers
   servlet:
@@ -24,7 +24,6 @@ spring:
       pool-name: HikariCP
       max-lifetime: 1800000
       connection-timeout: 20000
-
 mybatis:
   type-aliases-package: com.gitbaby.happygivers.domain
   mapper-locations: mapper/**/*.xml

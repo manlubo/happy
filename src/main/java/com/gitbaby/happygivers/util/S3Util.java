@@ -1,6 +1,7 @@
 package com.gitbaby.happygivers.util;
 
 
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
+@Data
 @Component
 public class S3Util {
   private final String accessKey;
