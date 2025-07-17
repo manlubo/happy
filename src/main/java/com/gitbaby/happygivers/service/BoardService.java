@@ -200,7 +200,7 @@ public class BoardService {
     board.setAttach(findAttach(bno));
     board.setNickname(findNickname(board.getMno()));
     board.setName(findName(board.getMno()));
-
+    board.setCname(findCname(board.getCno()));
     if (board.getDrno() != null) {
       board.setRound(findRound(board.getDrno()));
     }

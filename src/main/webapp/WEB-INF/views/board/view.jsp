@@ -167,7 +167,7 @@
                     <ul class="p-0 d-flex flex-column gap-3 m-0">
                         <c:forEach items="${orgDonates}" var="d">
                         <li>
-                            <a href="#" class="d-flex text-decoration-none">
+                            <a href="${cp}/board/view?bno=${d.bno}" class="d-flex text-decoration-none">
                                 <img src="${d.thumbnail != null ? d.thumbnail : 'https://placehold.co/200x150?text=No+img'}" class="rounded-2" alt="이미지4" style="height: 68px; width: 100px; object-fit: cover;">
                                 <div class="ms-3 small">
                                     <p>${d.title}</p>
