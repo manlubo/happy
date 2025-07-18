@@ -1,7 +1,6 @@
 package com.gitbaby.happygivers.controller;
 
-import com.gitbaby.happygivers.domain.Board;
-import com.gitbaby.happygivers.domain.Member;
+import com.gitbaby.happygivers.domain.*;
 import com.gitbaby.happygivers.domain.dto.Criteria;
 import com.gitbaby.happygivers.domain.dto.PageDto;
 import com.gitbaby.happygivers.domain.en.Ctype;
@@ -11,19 +10,19 @@ import com.gitbaby.happygivers.service.BoardService;
 import com.gitbaby.happygivers.service.DonateService;
 import com.gitbaby.happygivers.service.MemberService;
 import com.gitbaby.happygivers.util.AlertUtil;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.List;
 
 @Controller
@@ -132,14 +131,47 @@ public class BoardController {
     return "board/write";
   }
 
+  @PostMapping({"board/write", "notice/write", "qna/write"})
+  public String boardWrite(@SessionAttribute(value = "member", required = false) Member member, Model model, Board board, Donate donate, DonateRound round, Attach attach, @RequestParam("imgList") String imgListJson, Criteria cri, HttpServletRequest req) {
+    if(member == null || !member.getStatus().equals(Status.ACTIVE)) {
+      return AlertUtil.alert("접근 권한이 없습니다.", "list", model);
+    }
+    String path = req.getServletPath();
+    if (cri == null) {
+      cri = new Criteria();
+    }
+    if(attach.getUuid() != null) {
+      attach.setMno(null);
+      board.setAttach(attach);
+    }
+    List<Attach> images = null;
+    if(imgListJson != null && !imgListJson.isEmpty()) {
+      Gson gson = new Gson();
+      Type listType = new TypeToken<List<Attach>>(){}.getType();
+      images = gson.fromJson(imgListJson, listType);
 
+      board.setImages(images);
+    }
+
+    if ("/board/write".equals(path)) {
+      boardService.write(board, donate, round);
+    }
+    else if("/notice/write".equals(path)){
+      boardService.write(board);
+    }
+    else if("/qna/write".equals(path)){
+      boardService.write(board);
+    }
+
+    return AlertUtil.alert("글이 등록되었습니다.", "list", model);
+  }
 
 
 
 
   // 수정
   @GetMapping({"board/modify", "notice/modify", "qna/modify"})
-  public String modify(@SessionAttribute(value = "member", required = false) Member member, Model model, HttpServletRequest req, @RequestParam(value = "bno", required = false) Long bno, Criteria cri, HttpServletResponse resp) throws ServletException, IOException {
+  public String modifyForm(@SessionAttribute(value = "member", required = false) Member member, Model model, HttpServletRequest req, @RequestParam(value = "bno", required = false) Long bno, Criteria cri) throws ServletException, IOException {
     if (cri == null) {
       cri = new Criteria();
     }
@@ -168,5 +200,30 @@ public class BoardController {
     model.addAttribute("cri", cri);
     return "board/modify";
   }
+
+  @PostMapping({"board/modify", "notice/modify", "qna/modify"})
+  public String modify(@SessionAttribute(value = "member", required = false) Member member, Board modifyBoard, HttpServletRequest req, Model model , Attach attach, @RequestParam("imgList") String imgListJson) throws ServletException, IOException {
+    if(member == null || !member.getStatus().equals(Status.ACTIVE)) {
+      return AlertUtil.alert("접근 권한이 없습니다.", "list", model);
+    }
+
+    if(attach.getUuid() != null) {
+      attach.setMno(null);
+      modifyBoard.setAttach(attach);
+    }
+
+    List<Attach> images = null;
+    if(imgListJson != null && !imgListJson.isEmpty()) {
+      Gson gson = new Gson();
+      Type listType = new TypeToken<List<Attach>>(){}.getType();
+      images = gson.fromJson(imgListJson, listType);
+      modifyBoard.setImages(images);
+    }
+
+    boardService.modify(modifyBoard);
+
+    return AlertUtil.alert("글이 수정되었습니다.", "list", model);
+  }
+
 
 }
