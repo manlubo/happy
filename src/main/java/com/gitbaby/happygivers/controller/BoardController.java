@@ -107,7 +107,7 @@ public class BoardController {
     int replyCount = boardService.getReplyCount(bno);
     long myamount = 0;
     if(member != null) {
-      myamount = donateService.findMyTotalAmount(member.getMno());
+      myamount = donateService.findMyAmount(board.getDrno(), member.getMno());
       board.setLiked(boardService.checkBoardLiked(board.getBno(), member.getMno()));
     }
     List<Board> orgDonates = boardService.findMnoDonateList(board.getMno());
