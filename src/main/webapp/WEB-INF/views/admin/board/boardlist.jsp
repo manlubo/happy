@@ -118,7 +118,7 @@ $('#deleteBtn').on('click', function () {
 
 	  // 삭제 요청 전송
 	  $.ajax({
-	    url: `${cp}/admin/board/delete`,
+	    url: `${cp}/board/remove`,
 	    method: 'POST',
 	    traditional: true, // 배열을 bno=1&bno=2 형태로 전송
 	    data: { bno: checkedValues },

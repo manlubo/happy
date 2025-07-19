@@ -63,7 +63,7 @@ public class ReplyService {
 
   @Transactional
   public void remove(Long rno) {
-    mapper.delete(rno);
     likeMapper.deleteByRno(rno);
+    mapper.delete(rno);
   }
 }

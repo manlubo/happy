@@ -389,13 +389,14 @@ public class BoardService {
 
   // status값만 Active로 변경
   @Transactional
-  public void changeStatusActive(Long bno) {
+  public void changeStatus(Long bno, Status status) {
     Board board = findByBno(bno);
-    DonateRound round = findRound(board.getDrno());
-    round.setStatus(Status.ACTIVE);
-    donateMapper.updateRound(round);
-
-    board.setStatus(Status.ACTIVE);
+    if(board.getDrno() != null){
+      DonateRound round = findRound(board.getDrno());
+      round.setStatus(status);
+      donateMapper.updateRound(round);
+    }
+    board.setStatus(status);
     boardMapper.update(board);
   }
 }

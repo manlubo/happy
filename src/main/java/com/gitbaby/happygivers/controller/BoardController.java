@@ -15,6 +15,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.WebDataBinder;
@@ -364,6 +365,25 @@ public class BoardController {
     model.addAttribute("cri", cri);
     return "board/other/view";
   }
+
+
+  @RequestMapping("remove")
+  public ResponseEntity<?> remove(@RequestParam("bno") Long[] bno) {
+    try{
+      if(bno != null && bno.length > 0) {
+        for(Long b : bno) {
+          boardService.remove(b);
+        }
+      }
+      return ResponseEntity.ok().build();
+    }
+    catch(Exception e){
+      e.printStackTrace();
+      return ResponseEntity.status(500).build();
+    }
+  }
+
+
 
 
 
