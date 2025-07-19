@@ -16,7 +16,7 @@ public class IndexController {
   private BoardService boardService;
 
 
-  @GetMapping("/")
+  @GetMapping({"/", "index"})
   public String index(@SessionAttribute(value = "member", required = false) Member member, Model model) {
     if(member != null) {
       // 내 후원 게시글목록
