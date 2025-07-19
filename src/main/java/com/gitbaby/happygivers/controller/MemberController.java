@@ -3,6 +3,7 @@ package com.gitbaby.happygivers.controller;
 import com.gitbaby.happygivers.domain.Member;
 import com.gitbaby.happygivers.domain.Tos;
 import com.gitbaby.happygivers.domain.en.Mtype;
+import com.gitbaby.happygivers.mapper.AutoLoginMapper;
 import com.gitbaby.happygivers.service.BoardService;
 import com.gitbaby.happygivers.service.EmailCheckService;
 import com.gitbaby.happygivers.service.MemberService;
@@ -17,7 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Controller
@@ -25,6 +29,7 @@ import java.util.UUID;
 @RequestMapping("member")
 public class MemberController {
   private final BoardService boardService;
+  private final AutoLoginMapper autoLoginMapper;
   private MemberService memberService;
   private EmailCheckService emailCheckService;
   private TosService tosService;
@@ -97,12 +102,23 @@ public class MemberController {
   }
 
   @PostMapping("login")
-  public String login(Member member, HttpSession session, RedirectAttributes redirectAttributes){
+  public String login(Member member, HttpSession session, RedirectAttributes redirectAttributes, @RequestParam(value = "autologin", required = false) String autologin, HttpServletResponse resp){
     Boolean login = memberService.login(member.getId(), member.getPw(), member.getMtype());
     if(!login){
       redirectAttributes.addFlashAttribute("msg", "fail");
       return "login";
     }
+
+    if(autologin != null){
+      String token = UUID.randomUUID().toString();
+      LocalDateTime expireDate = LocalDateTime.now().plusDays(7);
+      Cookie cookie = new Cookie("autologin", token);
+      cookie.setPath("/");
+      cookie.setMaxAge(60 * 60 * 24 * 7); // 7일
+      resp.addCookie(cookie);
+      memberService.saveAutoLogin(memberService.findById(member.getId()).getMno(), token, expireDate);
+    }
+
     session.setAttribute("member", memberService.findById(member.getId()));
     return "redirect:/";
   }
@@ -111,8 +127,10 @@ public class MemberController {
 
   // 로그아웃
   @RequestMapping (value = "logout", method = {RequestMethod.GET, RequestMethod.POST})
-  public String logout(HttpSession session){
+  public String logout(HttpSession session, @SessionAttribute("member") Member member){
+    autoLoginMapper.delete(member.getMno());
     session.invalidate();
+
     return "redirect:/";
   }
 

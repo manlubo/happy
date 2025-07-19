@@ -1,7 +1,10 @@
 package com.gitbaby.happygivers.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+import com.gitbaby.happygivers.domain.AutoLogin;
+import com.gitbaby.happygivers.mapper.AutoLoginMapper;
 import lombok.AllArgsConstructor;
 
 
@@ -11,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.gitbaby.happygivers.mapper.MemberMapper;
 import com.gitbaby.happygivers.util.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class MemberService {
   private MemberMapper mapper;
   private PasswordEncoder passwordEncoder;
+  private AutoLoginMapper autoLoginMapper;
 
   //회원가입 처리 비밀번호 암호화 후 DB에 저장
   public int register(Member member) {
@@ -94,6 +99,17 @@ public class MemberService {
       return mapper.findByMno(mno);
   }
 
+  // 오토로그인
+  @Transactional
+  public void saveAutoLogin(Long mno, String token, LocalDateTime voidDate) {
+    AutoLogin al = AutoLogin.builder()
+      .mno(mno)
+      .token(token)
+      .voiddate(voidDate)
+      .build();
+
+    autoLoginMapper.insert(al);
+  }
 
 }
 
