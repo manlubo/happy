@@ -10,7 +10,7 @@
       <div class="row g-0">
         <!-- 왼쪽: 이미지 -->
         <div class="col-md-6 d-flex align-items-center justify-content-center bg-dark">
-          <img src="https://placehold.co/600x600" class="img-fluid" id="feedImg" style="object-fit: cover; max-height: 600px; max-width: 600px; width: 100%; height: 100%;" alt="게시글 이미지">
+          <img src="https://placehold.co/600x600" class="img-fluid" id="feedImg" style="object-fit: cover; max-height: 600px; max-width: 600px; width: 100%; height: 100%; min-height: 400px" alt="게시글 이미지">
         </div>
 
         <!-- 오른쪽: 게시글 정보 -->
@@ -69,6 +69,10 @@
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <script>
+  $.ajaxSetup({
+    contentType: 'application/json; charset=utf-8'
+  });
+
   $("#masonry-container").on("click", ".card", function(){
     event.preventDefault();
     const bno = $(this).data("bno");
@@ -356,30 +360,35 @@
         if (bno) param.bno = bno;
         if (mno) param.mno = mno;
 
-        $.post('${cp}/api/like', param, function(res) {
-            const liked = res.liked;
-            const $icon = $btn.find('i');
+      $.ajax({
+        url: '${cp}/api/like',
+        method: 'POST',
+        data: JSON.stringify(param),
+        success: function(res) {
+          const liked = res.liked;
+          const $icon = $btn.find('i');
 
-            // 아이콘 변경
-            if (liked) {
-                $icon.removeClass('fa-regular').addClass('fa-solid');
-            } else {
-                $icon.removeClass('fa-solid').addClass('fa-regular');
-            }
+          // 아이콘 변경
+          if (liked) {
+            $icon.removeClass('fa-regular').addClass('fa-solid');
+          } else {
+            $icon.removeClass('fa-solid').addClass('fa-regular');
+          }
 
-            // data-liked 상태도 갱신해줌
-            $btn.data('liked', liked);
+          // data-liked 상태도 갱신해줌
+          $btn.data('liked', liked);
 
+          // 좋아요 수 동기화
+          const countUrl = rno ? `${cp}/api/like?rno=\${rno}` : `${cp}/api/like?bno=\${bno}`;
+          $.get(countUrl, function (cnt) {
+            if (rno)
+              $(`.like-count[data-rno='\${rno}']`).text(cnt);
+            else
+              $(`.like-count[data-bno='\${bno}']`).text(cnt);
+          });
 
-            // 좋아요 수 동기화
-            const countUrl = rno ? `${cp}/api/like?rno=\${rno}` : `${cp}/api/like?bno=\${bno}`;
-            $.get(countUrl, function (cnt) {
-                if (rno)
-                    $(`.like-count[data-rno='\${rno}']`).text(cnt);
-                else
-                    $(`.like-count[data-bno='\${bno}']`).text(cnt);
-            });
-        });
+        }
+      })
     });
 
 </script>

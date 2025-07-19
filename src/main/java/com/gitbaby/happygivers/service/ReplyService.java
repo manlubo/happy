@@ -22,7 +22,10 @@ public class ReplyService {
 
 
   public Reply findBy(Long rno) {
-    return mapper.selectOne(rno);
+    Reply reply = mapper.selectOne(rno);
+    reply.setName(memberMapper.findByMno(reply.getMno()).getName());
+    reply.setNickname(memberMapper.findByMno(reply.getMno()).getNickname());
+    return reply;
   }
 
   public List<Reply> list(Long bno, Long mno, Long lastRno) {

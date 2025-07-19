@@ -240,6 +240,10 @@
 
 </script>
 <script>
+    $.ajaxSetup({
+        contentType: 'application/json; charset=utf-8'
+    });
+
     $(_ => {
     	const bno = '${board.bno}'
         const url = "${cp}" + "/reply/";
@@ -435,30 +439,39 @@
         if (bno) param.bno = bno;
         if (mno) param.mno = mno;
 
-        $.post('${cp}/api/like', param, function(res) {
-            const liked = res.liked;
-            const $icon = $btn.find('i');
+        $.ajax({
+            url: '${cp}/api/like',
+            method: 'POST',
+            data: JSON.stringify(param),
+            success: function(res) {
+                const liked = res.liked;
+                const $icon = $btn.find('i');
 
-            // 아이콘 변경
-            if (liked) {
-                $icon.removeClass('fa-regular').addClass('fa-solid');
-            } else {
-                $icon.removeClass('fa-solid').addClass('fa-regular');
+                // 아이콘 변경
+                if (liked) {
+                    $icon.removeClass('fa-regular').addClass('fa-solid');
+                } else {
+                    $icon.removeClass('fa-solid').addClass('fa-regular');
+                }
+
+                // data-liked 상태도 갱신해줌
+                $btn.data('liked', liked);
+
+                // 좋아요 수 동기화
+                const countUrl = rno ? `${cp}/api/like?rno=\${rno}` : `${cp}/api/like?bno=\${bno}`;
+                $.get(countUrl, function (cnt) {
+                    if (rno)
+                        $(`.like-count[data-rno='\${rno}']`).text(cnt);
+                    else
+                        $(`.like-count[data-bno='\${bno}']`).text(cnt);
+                });
+
             }
-
-            // data-liked 상태도 갱신해줌
-            $btn.data('liked', liked);
+        })
 
 
-            // 좋아요 수 동기화
-            const countUrl = rno ? `${cp}/api/like?rno=\${rno}` : `${cp}/api/like?bno=\${bno}`;
-            $.get(countUrl, function (cnt) {
-                if (rno)
-                    $(`.like-count[data-rno='\${rno}']`).text(cnt);
-                else
-                    $(`.like-count[data-bno='\${bno}']`).text(cnt);
-            });
-        });
+
+
     });
 
 </script>

@@ -35,7 +35,8 @@ public class ReplyController {
   @PostMapping("/")
   public Map<String,Object> write(@RequestBody Reply reply){
     replyService.register(reply);
-    return Map.of("result", true, "reply", reply);
+
+    return Map.of("result", true, "reply", replyService.findBy(reply.getRno()));
   }
 
   @PutMapping("{rno}")

@@ -28,7 +28,7 @@ public class LikeController {
   }
 
   @PostMapping
-  public Map<String, Object> postLike(@ModelAttribute Like like){
+  public Map<String, Object> postLike(@RequestBody Like like){
     return Map.of("liked", likeService.toggleLike(like));
   }
 }
