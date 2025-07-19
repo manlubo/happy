@@ -21,8 +21,11 @@ public class ContextPathListener implements ServletContextListener{ // 서버 �
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		ServletContext sc = sce.getServletContext();
+		// 컨텍스트 패스 설정
 		sc.setAttribute("cp", sc.getContextPath());
 
+
+		// s3url 설정
 		String s3url = String.format("https://%s.s3.%s.amazonaws.com/upload/", s3Util.getBucketName(), s3Util.getRegionName());
 		sc.setAttribute("s3url", s3url);
 	}
