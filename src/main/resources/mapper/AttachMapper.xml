@@ -38,7 +38,12 @@
  		DELETE from tbl_attach
 		where bno = #{bno} or viewbno = #{bno}
  	</delete>
- 	
+
+	<delete id="deleteByMno">
+		DELETE from tbl_attach
+		where mno = #{mno}
+	</delete>
+
  	<!-- 첨부파일 선택 -->
  	<select id="selectOne" resultType="attach">
  		SELECT * from tbl_attach where bno = #{bno}
@@ -85,5 +90,5 @@
  		from tbl_attach
  		where viewbno = #{bno}
  	</select>
- 	
+
  </mapper>

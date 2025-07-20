@@ -3,7 +3,9 @@ package com.gitbaby.happygivers.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.gitbaby.happygivers.domain.Attach;
 import com.gitbaby.happygivers.domain.AutoLogin;
+import com.gitbaby.happygivers.mapper.AttachMapper;
 import com.gitbaby.happygivers.mapper.AutoLoginMapper;
 import lombok.AllArgsConstructor;
 
@@ -20,10 +22,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @AllArgsConstructor
 public class MemberService {
+  private final MemberMapper memberMapper;
   private MemberMapper mapper;
   private PasswordEncoder passwordEncoder;
   private AutoLoginMapper autoLoginMapper;
-
+  private AttachMapper attachMapper;
   //회원가입 처리 비밀번호 암호화 후 DB에 저장
   public int register(Member member) {
 
@@ -111,6 +114,16 @@ public class MemberService {
     autoLoginMapper.insert(al);
   }
 
+
+  // 프로필 사진 변경
+  @Transactional
+  public void changeProfile(Attach attach) {
+    attachMapper.deleteByMno(attach.getMno());
+    attachMapper.insert(attach);
+    Member member = memberMapper.findByMno(attach.getMno());
+    member.setProfile("https://happygivers-bucket.s3.ap-northeast-2.amazonaws.com/" + attach.getS3Key());
+    memberMapper.updateProfileImage(member);
+  }
 }
 
 

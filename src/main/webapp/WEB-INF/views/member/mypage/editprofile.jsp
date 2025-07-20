@@ -16,14 +16,18 @@
             <form method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label class="form-label">현재 프로필 사진</label><br/>
-                    <img src="${member.profile}" alt="현재 프로필" style="width:100px;height:100px;border-radius:50%;border:1px solid var(--border-1);">
+                    <img src="${member.profile}" alt="현재 프로필" id="memberProfile" style="width:100px; height:100px; border-radius:50%; border:1px solid var(--border-1); object-fit: cover;">
                 </div>
 
                 <div class="mb-3">
                     <label for="profileImage" class="form-label">새 프로필 사진 선택</label>
-                    <input class="form-control" type="file" id="profileImage" name="profileImage" accept="image/*">
+                    <input class="form-control" type="file" id="profileImage" name="profileImage" accept=".jpg, .jpeg, .png, .bmp, .gif, .webp">
                 </div>
-
+                <input type="hidden" name="uuid" id="uuid">
+                <input type="hidden" name="path" id="path">
+                <input type="hidden" name="origin" id="origin">
+                <input type="hidden" name="image" value="true">
+                <input type="hidden" name="mno" value="${member.mno }">
                 <button type="submit" class="btn btn-primary">저장</button>
             </form>
         </div>
@@ -33,18 +37,55 @@
 </div>
 
 <script>
-  // 이미지 미리보기
-  document.getElementById("profileImage").addEventListener("change", function(e) {
-    const preview = document.querySelector("img[alt='현재 프로필']");
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        preview.src = evt.target.result;
-      }
-      reader.readAsDataURL(file);
-    }
-  });
+    const cp = '${pageContext.request.contextPath}';
+    // 썸네일 파일 변경시 사이즈, 확장자 체크
+    $('#profileImage').on('change', function (e) {
+        event.preventDefault();
+        const file = this.files[0];
+        if (!file) return;
+
+        const MAX_FILE_SIZE = 1 * 1024 * 1024;
+        const ONLY_EXT = ['jpg', 'jpeg', 'png', 'bmp', 'gif', 'webp'];
+        const ext = file.name.split(".").pop().toLowerCase();
+
+        if (!ONLY_EXT.includes(ext) || file.size > MAX_FILE_SIZE) {
+            alert("프로필 이미지는 이미지 파일(jpg, jpeg, png, bmp, gif, webp)만 등록 가능하며 최대 1MB입니다.");
+            $(this).val("");
+            $("#profileImage").val("");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("uploadFile", file);
+
+
+        $.ajax({
+            url : '${cp}/upload',
+            method : 'POST',
+            data : formData,
+            processData : false, // data를 queryString으로 쓰지 않겠다.
+            contentType : false, // multipart/form-data; 이후에 나오게될 브라우저 정보도 포함시킨다, 즉 기본 브라우저 설정을 따르는 옵션.
+            success : function(data) {
+                if(Array.isArray(data) && data.length > 0){
+                    const a = data[0];
+                    const imageUrl = 'https://happygivers-bucket.s3.ap-northeast-2.amazonaws.com/upload/' + a.path + '/' +  a.uuid;
+                    if(a.image){
+                        $('#uuid').val(a.uuid);
+                        $('#path').val(a.path);
+                        $('#origin').val(a.origin);
+                        $('#memberProfile').attr("src", imageUrl);
+                    }
+                }
+                else {
+                    alert('이미지가 없습니다.');
+                }
+            },
+            error: function () {
+                alert('이미지 업로드 실패');
+            }
+        });
+    });
+
 </script>
 
 <%@ include file="../../common/footer.jsp" %>
