@@ -7,6 +7,7 @@ import com.gitbaby.happygivers.domain.Attach;
 import com.gitbaby.happygivers.domain.AutoLogin;
 import com.gitbaby.happygivers.mapper.AttachMapper;
 import com.gitbaby.happygivers.mapper.AutoLoginMapper;
+import com.gitbaby.happygivers.util.S3Util;
 import lombok.AllArgsConstructor;
 
 
@@ -27,6 +28,8 @@ public class MemberService {
   private PasswordEncoder passwordEncoder;
   private AutoLoginMapper autoLoginMapper;
   private AttachMapper attachMapper;
+  private S3Util s3Util;
+
   //회원가입 처리 비밀번호 암호화 후 DB에 저장
   public int register(Member member) {
 
@@ -118,7 +121,9 @@ public class MemberService {
   // 프로필 사진 변경
   @Transactional
   public void changeProfile(Attach attach) {
+    s3Util.remove(attachMapper.findByMno(attach.getMno()).getS3Key());
     attachMapper.deleteByMno(attach.getMno());
+
     attachMapper.insert(attach);
     Member member = memberMapper.findByMno(attach.getMno());
     member.setProfile("https://happygivers-bucket.s3.ap-northeast-2.amazonaws.com/" + attach.getS3Key());

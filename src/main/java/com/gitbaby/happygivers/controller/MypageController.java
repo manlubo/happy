@@ -4,13 +4,11 @@ import com.gitbaby.happygivers.domain.Attach;
 import com.gitbaby.happygivers.domain.Member;
 import com.gitbaby.happygivers.service.MemberService;
 import com.gitbaby.happygivers.util.AlertUtil;
+import com.gitbaby.happygivers.util.PasswordEncoder;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
@@ -19,6 +17,7 @@ import javax.servlet.http.HttpSession;
 @AllArgsConstructor
 public class MypageController {
   private MemberService memberService;
+  private PasswordEncoder passwordEncoder;
 
   // 마이페이지
   @GetMapping
@@ -83,6 +82,15 @@ public class MypageController {
     return "member/mypage/updatepw";
   }
 
+  @PostMapping("updatepw")
+  public String updatepw(@SessionAttribute("member") Member member, Model model, @RequestParam("currentPw") String currentPw, @RequestParam("newPw") String newPw, HttpSession session) {
+    if(!passwordEncoder.matches(currentPw, member.getPw()) || passwordEncoder.matches(newPw, member.getPw())){
+      return AlertUtil.alert("현재 비밀번호가 일치하지 않거나, 현재 비밀번호와 변경할 비밀번호가 동일합니다.", "updatepw", model);
+    }
+    memberService.updatePassword(member.getId(), newPw);
+    session.setAttribute("member", memberService.findByMno(member.getMno()));
+    return AlertUtil.alert("비밀번호가 변경되었습니다.", "updatepw", model);
+  }
 
   // ================================ 기부 / 결제 ===========================================
 

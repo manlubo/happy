@@ -91,4 +91,9 @@
  		where viewbno = #{bno}
  	</select>
 
+	<select id="findByMno" resultType="attach">
+		select *
+		from tbl_attach
+		where mno = #{mno}
+	</select>
  </mapper>

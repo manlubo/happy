@@ -7,38 +7,48 @@
 </head>
 <body>
 <%@ include file="../../common/header.jsp" %>
+<div class="container px-0">
+  <main class="row justify-content-between mx-0">
+    <div class="col-lg-8 px-0" style="max-width: 700px;">
 
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 80vh;">
-  <div class="border rounded-4 p-5 shadow" style="width: 100%; max-width: 677px; background-color: #fff;">
-    <h3 class="text-center mb-4">비밀번호 변경</h3>
+      <div class="d-flex border rounded-3 list-group p-3 gap-3">
 
-    <form action="${cp}/mypage/updatepw" method="post" class="d-flex flex-column gap-3">
-      <div class="form-floating">
-        <input type="password" class="form-control" id="currentPw" name="currentPw" placeholder="현재 비밀번호" required>
-        <label for="currentPw">현재 비밀번호</label>
+        <h3 class="text-center mb-4">비밀번호 변경</h3>
+
+        <form action="${cp}/mypage/updatepw" method="post" class="d-flex flex-column gap-3">
+          <div class="form-floating">
+            <input type="password" class="form-control" id="currentPw" name="currentPw" placeholder="현재 비밀번호" required>
+            <label for="currentPw">현재 비밀번호</label>
+          </div>
+
+          <div class="form-floating">
+            <input type="password" class="form-control" id="newPw" name="newPw" placeholder="새 비밀번호" required>
+            <label for="newPw">새 비밀번호</label>
+          </div>
+
+          <div class="form-floating">
+            <input type="password" class="form-control" id="newPw2" name="newPw2" placeholder="새 비밀번호 확인" required>
+            <label for="newPw2">새 비밀번호 확인</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2" onclick="return confirm('비밀번호를 변경하시겠습니까?');">비밀번호 변경</button>
+        </form>
+
       </div>
 
-      <div class="form-floating">
-        <input type="password" class="form-control" id="newPw" name="newPw" placeholder="새 비밀번호" required>
-        <label for="newPw">새 비밀번호</label>
-      </div>
-
-      <div class="form-floating">
-        <input type="password" class="form-control" id="newPw2" name="newPw2" placeholder="새 비밀번호 확인" required>
-        <label for="newPw2">새 비밀번호 확인</label>
-      </div>
-
-      <button type="submit" class="btn btn-primary w-100 py-2">비밀번호 변경</button>
-
-      <c:if test="${param.success == '1'}">
-        <div class="alert alert-success text-center mt-2 mb-0">비밀번호가 성공적으로 변경되었습니다.</div>
-      </c:if>
-      <c:if test="${param.error == '1'}">
-        <div class="alert alert-danger text-center mt-2 mb-0">비밀번호가 일치하지 않거나 현재 비밀번호가 틀립니다.</div>
-      </c:if>
-    </form>
-  </div>
+    </div>
+    <%@ include file="membermenu.jsp" %>
+  </main>
 </div>
 
+<script>
+  $("form").on("submit", function(e){
+    e.preventDefault();
+    if($("#newPw").val() != $("#newPw2").val()){
+      return alert("변경하실 비밀번호가 일치하지 않습니다.");
+    }
+    $(this).off("submit").submit();
+  })
+</script>
 </body>
 </html>
