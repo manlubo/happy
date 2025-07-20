@@ -1,8 +1,7 @@
 package com.gitbaby.happygivers.controller;
 
-import com.gitbaby.happygivers.domain.Attach;
-import com.gitbaby.happygivers.domain.Member;
-import com.gitbaby.happygivers.service.MemberService;
+import com.gitbaby.happygivers.domain.*;
+import com.gitbaby.happygivers.service.*;
 import com.gitbaby.happygivers.util.AlertUtil;
 import com.gitbaby.happygivers.util.PasswordEncoder;
 import lombok.AllArgsConstructor;
@@ -11,11 +10,16 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Controller
 @RequestMapping("mypage")
 @AllArgsConstructor
 public class MypageController {
+  private final DonateService donateService;
+  private final PayService payService;
+  private final BoardService boardService;
+  private final ReplyService replyService;
   private MemberService memberService;
   private PasswordEncoder passwordEncoder;
 
@@ -95,17 +99,36 @@ public class MypageController {
   // ================================ 기부 / 결제 ===========================================
 
   // 기부내역 조회
-
+  @GetMapping("action/list")
+  public String actionListForm(@SessionAttribute("member") Member member, Model model) {
+    List<DonateAction> actions = donateService.myActionList(member.getMno());
+    model.addAttribute("actions", actions);
+    return "member/mypage/actionlist";
+  }
 
   // 결제내역 조회
-
+  @GetMapping("pay/list")
+  public String payListForm(@SessionAttribute("member") Member member, Model model) {
+    List<Pay> pays = payService.findByMno(member.getMno());
+    model.addAttribute("pays", pays);
+    return "member/mypage/paylist";
+  }
 
   // ================================ 게시판 ===========================================
 
   // 내가 쓴 게시글 조회
-
-
+  @GetMapping("board/list")
+  public String boardListForm(@SessionAttribute("member") Member member, Model model) {
+    List<Board> boards = boardService.myBoardList(member.getMno());
+    model.addAttribute("boards", boards);
+    return "member/mypage/boardlist";
+  }
   // 내가 쓴 댓글 조회
-
+  @GetMapping("reply/list")
+  public String replyListForm(@SessionAttribute("member") Member member, Model model) {
+    List<Reply> replys = replyService.myReplys(member.getMno());
+    model.addAttribute("replys", replys);
+    return "member/mypage/replylist";
+  }
 
 }
