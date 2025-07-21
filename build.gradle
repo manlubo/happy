@@ -1,8 +1,17 @@
 plugins {
 	id 'java'
+	id 'war'
 	id 'org.springframework.boot' version '2.7.18'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
+bootJar {
+	enabled = false
+}
+
+bootWar {
+	enabled = true
+}
+
 
 group = 'com.gitbaby'
 version = '0.0.1-SNAPSHOT'
@@ -45,12 +54,11 @@ dependencies {
 	implementation 'net.coobird:thumbnailator:0.4.20'
 	implementation 'redis.clients:jedis:5.2.0'
 
-	compileOnly 'software.amazon.awssdk:aws-sdk-java:2.31.77'
+
 	implementation 'software.amazon.awssdk:auth:2.31.77'
 	implementation 'software.amazon.awssdk:s3:2.31.77'
 	implementation 'org.apache.tomcat.embed:tomcat-embed-jasper'
 
-	implementation 'redis.clients:jedis:5.2.0'
 	implementation 'com.sun.mail:jakarta.mail:2.0.1'
 	implementation 'com.sun.activation:jakarta.activation:2.0.1'
 }

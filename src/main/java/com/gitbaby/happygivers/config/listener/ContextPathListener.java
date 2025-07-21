@@ -15,7 +15,6 @@ import javax.servlet.annotation.WebListener;
 
 
 @Component
-@WebListener
 public class ContextPathListener implements ServletContextListener { // 서버 실행시 딱 한번만 하는것
   @Autowired
   private S3Util s3Util;
